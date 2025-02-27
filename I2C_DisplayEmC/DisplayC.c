@@ -1,16 +1,3 @@
-/*
- * Por: Wilton Lacerda Silva
- *    Comunicação serial com I2C
- *  
- * Uso da interface I2C para comunicação com o Display OLED
- * 
- * Estudo da biblioteca ssd1306 com PicoW na Placa BitDogLab.
- *  
- * Este programa escreve uma mensagem no display OLED.
- * 
- * 
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -38,7 +25,7 @@
 #define OUT_PIN 7
 #define NUM_PIXELS 25
 #define BUZZER 21
-#define SW_PIN 22
+
 
 // Variáveis globais
 static volatile uint a = 1;
@@ -53,10 +40,6 @@ void inicializar(){
   gpio_set_dir(led_verde, GPIO_OUT);
   gpio_init(led_vermelho);
   gpio_set_dir(led_vermelho, GPIO_OUT);
-
-  gpio_init(SW_PIN);
-  gpio_set_dir(SW_PIN, GPIO_IN);
-  gpio_pull_up(SW_PIN);
 
   gpio_init(botaoA);
   gpio_set_dir(botaoA, GPIO_IN); // Configura o pino como entrada
@@ -230,7 +213,6 @@ int main()
   inicializar();
   adc_init();
   adc_gpio_init(VRX_PIN);
-  bool sw_value = gpio_get(SW_PIN) == 0;
 
 
   gpio_set_function(I2C_SDA, GPIO_FUNC_I2C); // Set the GPIO pin function to I2C
@@ -245,7 +227,6 @@ int main()
   // Configuração da interrupção com callback
   gpio_set_irq_enabled_with_callback(botaoA, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handler);
   gpio_set_irq_enabled_with_callback(botaoB, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handler);
-  gpio_set_irq_enabled_with_callback(SW_PIN, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handler);
 
 
   // Limpa o display. O display inicia com todos os pixels apagados.
@@ -309,23 +290,7 @@ void gpio_irq_handler(uint gpio, uint32_t events)
           subir_temperatura = true;
           last_temp_update = to_ms_since_boot(get_absolute_time());
         }
-      }else if(gpio == SW_PIN){
-        temperatura = 30;
-        temperatura_iniciada = false;
-        subir_temperatura = false;
-        executar_animacao = false;
-        last_temp_update = 0;
-        a = 1;
-
-        gpio_put(led_verde, 0);
-        gpio_put(led_azul, 1);
-        gpio_put(led_vermelho, 0);
-
-        printf("Sistema resetado!\n");
-
-        sleep_ms(500); // Pequeno delay para evitar múltiplos resets
       }
-
       a++; 
 
     }
